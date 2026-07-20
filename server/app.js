@@ -1,3 +1,5 @@
+
+// Then import routes, database, etc.
 import express from "express";
 
 import authRoutes from "./routes/auth.routes.js";

@@ -1,81 +1,95 @@
 import mongoose from "mongoose";
 
 const studentSchema = new mongoose.Schema(
-  {
-    user: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true
+{
+    user:{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:"User",
+        required:true,
+        unique:true
     },
 
-    // Academic Info
-    PRN: {
-      type: String
-    },
-    rollNumber: {
-      type: String
-    },
-    branch: {
-      type: String
-    },
-    year: {
-      type: String
-    },
-    cgpa: {
-      type: Number
+    prn:{
+        type:String,
+        default:""
     },
 
-    // Skills
-    skills: [
-      {
-        type: String
-      }
+    rollNumber:{
+        type:String,
+        default:""
+    },
+
+    branch:{
+        type:String,
+        default:""
+    },
+
+    year:{
+        type:String,
+        default:""
+    },
+
+    cgpa:{
+        type:Number,
+        default:0
+    },
+
+    phone:{
+        type:String,
+        default:""
+    },
+
+    address:{
+        type:String,
+        default:""
+    },
+
+    linkedin:{
+        type:String,
+        default:""
+    },
+
+    github:{
+        type:String,
+        default:""
+    },
+
+    portfolio:{
+        type:String,
+        default:""
+    },
+
+    skills:[
+        {
+            type:String
+        }
     ],
 
-    // Contact Info
-    phone: String,
-    address: String,
-
-    // Social Links
-    linkedin: String,
-    github: String,
-    portfolio: String,
-
-    // Resume (Cloudinary)
-    resume: {
-      url: {
-        type: String
-      },
-      public_id: {
-        type: String
-      }
+    resume:{
+        url:String,
+        public_id:String
     },
 
-    // Profile Picture (Cloudinary)
-    profilePic: {
-      url: {
-        type: String
-      },
-      public_id: {
-        type: String
-      }
+    profilePicture:{
+        url:String,
+        public_id:String
     },
 
-    // Saved Jobs
-    savedJobs: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Job"
-      }
+    savedJobs:[
+        {
+            type:mongoose.Schema.Types.ObjectId,
+            ref:"Job"
+        }
     ],
 
-    // Profile Completion (optional but powerful)
-    profileCompleted: {
-      type: Boolean,
-      default: false
+    profileCompleted:{
+        type:Boolean,
+        default:false
     }
-  },
-  { timestamps: true }
-);
 
-export default mongoose.model("Student", studentSchema);
+},
+{
+    timestamps:true
+});
+
+export default mongoose.model("Student",studentSchema);

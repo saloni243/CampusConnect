@@ -17,17 +17,10 @@ router.get("/profile", protect, getProfile);
 router.put("/profile", protect, updateProfile);
 
 router.post(
-  "/upload-resume",
+  "/upload-file",
   protect,
   upload.single("file"),
   uploadResume
-);
-
-router.post(
-  "/upload-profile",
-  protect,
-  upload.single("file"),
-  uploadProfilePic
 );
 
 export default router;
