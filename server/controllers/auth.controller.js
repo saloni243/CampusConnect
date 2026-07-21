@@ -1,3 +1,4 @@
+import Company from "../models/company.model.js";
 import User from "../models/user.model.js";
 import Student from "../models/student.model.js";
 import bcrypt from "bcryptjs";
@@ -44,6 +45,13 @@ export const register = async (req, res) => {
         user: user._id,
       });
     }
+
+    if (role === "company") {
+  await Company.create({
+    user: user._id,
+    companyName: name
+  });
+}
 
     const token = jwt.sign(
       {

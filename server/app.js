@@ -27,6 +27,8 @@ app.use("/api/companies", companyRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/notifications",notificationRoutes);
 app.use("/api/statistics", statisticsRoutes);
+app.use("/api/company", companyRoutes);
+
 
 
 app.get("/", (req, res) => {
@@ -42,6 +44,8 @@ app.use((req, res) => {
     message: "Route Not Found",
   });
 });
+
+
 
 
 export default app;
