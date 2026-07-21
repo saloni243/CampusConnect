@@ -59,33 +59,58 @@ const studentSchema = new mongoose.Schema(
         default:""
     },
 
-    skills:[
-        {
-            type:String
-        }
-    ],
-
-    resume:{
-        url:String,
-        public_id:String
-    },
-
-    profilePicture:{
-        url:String,
-        public_id:String
-    },
-
-    savedJobs:[
-        {
-            type:mongoose.Schema.Types.ObjectId,
-            ref:"Job"
-        }
-    ],
-
-    profileCompleted:{
-        type:Boolean,
-        default:false
+    skills: [
+    {
+        type: String,
+        trim: true
     }
+],
+    resume: {
+    filename: {
+        type: String,
+        default: ""
+    },
+    path: {
+        type: String,
+        default: ""
+    },
+    url: {
+        type: String,
+        default: ""
+    }
+},
+
+    profilePicture: {
+    filename: {
+        type: String,
+        default: ""
+    },
+    path: {
+        type: String,
+        default: ""
+    },
+    url: {
+        type: String,
+        default: ""
+    }
+},
+
+    savedJobs: [
+    {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Job"
+    }
+],
+
+    profileCompleted: {
+    type: Boolean,
+    default: false
+},
+
+profileCompletion: {
+    type: Number,
+    default: 0
+},
 
 },
 {

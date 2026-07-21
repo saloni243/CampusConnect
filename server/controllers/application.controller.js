@@ -4,44 +4,60 @@ import  Job  from "../models/job.model.js";
 
 // APPLY JOB
 export const applyJob = async (req, res) => {
-  try {
-    const student = await Student.findOne({ user: req.user.id });
+    try {
 
-    if (!student) {
-      return res.status(404).json({ message: "Student not found" });
+        const student = await Student.findOne({
+            user: req.user.id
+        });
+
+        if (!student) {
+            return res.status(404).json({
+                success: false,
+                message: "Student not found"
+            });
+        }
+
+        const job = await Job.findById(req.params.jobId);
+
+        if (!job) {
+            return res.status(404).json({
+                success: false,
+                message: "Job not found"
+            });
+        }
+
+        const alreadyApplied = await Application.findOne({
+            student: student._id,
+            job: job._id
+        });
+
+        if (alreadyApplied) {
+            return res.status(400).json({
+                success: false,
+                message: "Already applied"
+            });
+        }
+
+        const application = await Application.create({
+            student: student._id,
+            job: job._id,
+            company: job.company
+        });
+
+        res.status(201).json({
+            success: true,
+            message: "Application submitted successfully",
+            application
+        });
+
+    } catch (error) {
+
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+
     }
-
-    const job = await job.findById(req.params.jobId);
-
-    if (!job) {
-      return res.status(404).json({ message: "Job not found" });
-    }
-
-    // ❌ Check duplicate
-    const alreadyApplied = await Application.findOne({
-      student: student._id,
-      job: job._id
-    });
-
-    if (alreadyApplied) {
-      return res.status(400).json({
-        message: "Already applied to this job"
-      });
-    }
-
-    const application = await Application.create({
-      student: student._id,
-      job: job._id
-    });
-
-    res.status(201).json({
-      message: "Applied successfully",
-      application
-    });
-
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
 };
 
 export const getMyApplications = async (req, res) => {
@@ -105,4 +121,47 @@ export const updateApplicationStatus = async (req, res) => {
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
+};
+
+export const cancelApplication = async (req, res) => {
+    try {
+
+        const student = await Student.findOne({
+            user: req.user.id
+        });
+
+        if (!student) {
+            return res.status(404).json({
+                success: false,
+                message: "Student not found"
+            });
+        }
+
+        const application = await Application.findOne({
+            student: student._id,
+            job: req.params.jobId
+        });
+
+        if (!application) {
+            return res.status(404).json({
+                success: false,
+                message: "Application not found"
+            });
+        }
+
+        await application.deleteOne();
+
+        res.status(200).json({
+            success: true,
+            message: "Application cancelled successfully"
+        });
+
+    } catch (error) {
+
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+
+    }
 };
