@@ -1,3 +1,4 @@
+import Student from "../models/student.model.js";
 import Job from "../models/job.model.js";
 import Company from "../models/company.model.js";
 
@@ -299,4 +300,154 @@ export const removeSavedJob = async (req, res) => {
     }
 };
 
-// Create Job
+// Get Logged-in Company's Jobs
+export const getCompanyJobs = async (req, res) => {
+    try {
+
+        // Find company profile
+        const company = await Company.findOne({
+            user: req.user.id
+        });
+
+        if (!company) {
+            return res.status(404).json({
+                success: false,
+                message: "Company profile not found"
+            });
+        }
+
+        // Find jobs posted by this company
+        const jobs = await Job.find({
+            company: company._id
+        }).sort({ createdAt: -1 });
+
+        res.status(200).json({
+            success: true,
+            count: jobs.length,
+            jobs
+        });
+
+    } catch (error) {
+
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+
+    }
+};
+
+// Update Job
+export const updateJob = async (req, res) => {
+    try {
+
+        const company = await Company.findOne({
+            user: req.user.id
+        });
+
+        if (!company) {
+            return res.status(404).json({
+                success: false,
+                message: "Company profile not found"
+            });
+        }
+
+        const job = await Job.findOne({
+            _id: req.params.id,
+            company: company._id
+        });
+
+        if (!job) {
+            return res.status(404).json({
+                success: false,
+                message: "Job not found"
+            });
+        }
+
+        const {
+            title,
+            description,
+            location,
+            jobType,
+            package: packageLPA,
+            skills,
+            eligibleBranches,
+            minimumCGPA,
+            batch,
+            lastDate,
+            isActive
+        } = req.body;
+
+        job.title = title ?? job.title;
+        job.description = description ?? job.description;
+        job.location = location ?? job.location;
+        job.jobType = jobType ?? job.jobType;
+        job.package = packageLPA ?? job.package;
+        job.skills = skills ?? job.skills;
+        job.eligibleBranches = eligibleBranches ?? job.eligibleBranches;
+        job.minimumCGPA = minimumCGPA ?? job.minimumCGPA;
+        job.batch = batch ?? job.batch;
+        job.lastDate = lastDate ?? job.lastDate;
+        job.isActive = isActive ?? job.isActive;
+
+        await job.save();
+
+        res.status(200).json({
+            success: true,
+            message: "Job updated successfully",
+            job
+        });
+
+    } catch (error) {
+
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+
+    }
+};
+
+// Delete Job
+export const deleteJob = async (req, res) => {
+    try {
+
+        const company = await Company.findOne({
+            user: req.user.id
+        });
+
+        if (!company) {
+            return res.status(404).json({
+                success: false,
+                message: "Company profile not found"
+            });
+        }
+
+        const job = await Job.findOne({
+            _id: req.params.id,
+            company: company._id
+        });
+
+        if (!job) {
+            return res.status(404).json({
+                success: false,
+                message: "Job not found"
+            });
+        }
+
+        await job.deleteOne();
+
+        res.status(200).json({
+            success: true,
+            message: "Job deleted successfully"
+        });
+
+    } catch (error) {
+
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+
+    }
+};
