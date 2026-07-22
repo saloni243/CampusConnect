@@ -23,7 +23,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/jobs", jobRoutes);
 app.use("/api/applications", applicationRoutes);
 app.use("/api/students", studentRoutes);
-app.use("/api/companies", companyRoutes);
+
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/notifications",notificationRoutes);
 app.use("/api/statistics", statisticsRoutes);

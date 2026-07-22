@@ -1,29 +1,77 @@
 import Job from "../models/job.model.js";
+import Company from "../models/company.model.js";
+
 
 export const createJob = async (req, res) => {
-  try {
-    const { title, description, location, salary } = req.body;
+    try {
 
-    const job = await Job.create({
-      title,
-      description,
-      location,
-      salary,
-      company: req.user._id
-    });
+        const {
+            title,
+            description,
+            location,
+            jobType,
+            package: packageLPA,
+            skills,
+            eligibleBranches,
+            minimumCGPA,
+            batch,
+            lastDate
+        } = req.body;
 
-    res.status(201).json({ message: "Job created", job });
+        // Find logged-in company
+        const company = await Company.findOne({
+            user: req.user.id
+        });
 
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
+        if (!company) {
+            return res.status(404).json({
+                success: false,
+                message: "Company profile not found"
+            });
+        }
+
+        // Create Job
+        const job = await Job.create({
+            company: company._id,
+            title,
+            description,
+            location,
+            jobType,
+            package: packageLPA,
+            skills,
+            eligibleBranches,
+            minimumCGPA,
+            batch,
+            lastDate
+        });
+
+        res.status(201).json({
+            success: true,
+            message: "Job created successfully",
+            job
+        });
+
+    } catch (error) {
+
+        console.log(error);
+
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+
+    }
 };
 
 export const getJobs = async (req, res) => {
     try {
 
-        const jobs = await Job.find({ isActive: true })
-            .populate("company", "companyName location logo");
+        const jobs = await Job.find({
+            isActive: true
+        }).populate(
+            "company",
+            "companyName location logo"
+        );
 
         res.status(200).json({
             success: true,
@@ -118,7 +166,10 @@ export const getJobById = async (req, res) => {
     try {
 
         const job = await Job.findById(req.params.id)
-            .populate("company", "companyName location website logo");
+            .populate(
+                "company",
+                "companyName description website location logo"
+            );
 
         if (!job) {
             return res.status(404).json({
@@ -247,3 +298,5 @@ export const removeSavedJob = async (req, res) => {
 
     }
 };
+
+// Create Job
