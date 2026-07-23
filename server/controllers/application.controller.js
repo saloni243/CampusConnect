@@ -1,3 +1,4 @@
+import Notification from "../models/notification.model.js";
 import  Application from "../models/application.model.js";
 import  Student  from "../models/student.model.js";
 import  Job  from "../models/job.model.js";
@@ -43,6 +44,12 @@ export const applyJob = async (req, res) => {
             job: job._id,
             company: job.company
         });
+        await Notification.create({
+    user: req.user.id,
+    title: "Application Submitted",
+    message: `You have successfully applied for ${job.title}.`,
+    type: "Application"
+});
 
         res.status(201).json({
             success: true,
@@ -80,25 +87,49 @@ export const getApplicants = async (req, res) => {
 
 export const updateApplicationStatus = async (req, res) => {
   try {
-    const { applicationId, status } = req.body;
+    const { applicationId } = req.params;
+    const { status } = req.body;
 
-    const application = await Application.findById(applicationId);
+    const application = await Application.findById(applicationId)
+      .populate({
+        path: "student",
+        select: "user"
+      })
+      .populate({
+        path: "job",
+        select: "title"
+      });
 
     if (!application) {
-      return res.status(404).json({ message: "Application not found" });
+      return res.status(404).json({
+        success: false,
+        message: "Application not found"
+      });
     }
 
     application.status = status;
 
     await application.save();
 
-    res.json({
-      message: "Status updated",
+    // Create notification for student
+    await Notification.create({
+      user: application.student.user,
+      title: "Application Status Updated",
+      message: `Your application for ${application.job.title} has been ${status}.`,
+      type: "Application"
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Status updated successfully",
       application
     });
 
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
   }
 };
 

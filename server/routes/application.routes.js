@@ -5,24 +5,63 @@ import {
   updateApplicationStatus,
   cancelApplication,
   getMyApplications,
-  getApplicationStatus
+  getApplicationStatus,
 } from "../controllers/application.controller.js";
 
 import { protect, authorize } from "../middleware/auth.middleware.js";
 
 const router = express.Router();
 
-// 🎓 Student
-router.post("/apply/:jobId", protect, authorize("student"), applyJob);
+// ================= Student =================
 
-router.delete("/cancel/:jobId", protect, authorize("student"), cancelApplication);
+// Apply for Job
+router.post(
+  "/apply/:jobId",
+  protect,
+  authorize("student"),
+  applyJob
+);
 
-router.get("/my-applications", protect, authorize("student"), getMyApplications);
+// Cancel Application
+router.delete(
+  "/cancel/:jobId",
+  protect,
+  authorize("student"),
+  cancelApplication
+);
 
-router.get("/status/:jobId", protect, authorize("student"), getApplicationStatus);
+// Get My Applications
+router.get(
+  "/my-applications",
+  protect,
+  authorize("student"),
+  getMyApplications
+);
 
-router.get("/applicants/:jobId", protect, authorize("company"), getApplicants);
+// Check Application Status
+router.get(
+  "/status/:jobId",
+  protect,
+  authorize("student"),
+  getApplicationStatus
+);
 
-router.put("/status", protect, authorize("company"), updateApplicationStatus);
+// ================= Company =================
+
+// View Applicants of a Job
+router.get(
+  "/job/:jobId/applicants",
+  protect,
+  authorize("company"),
+  getApplicants
+);
+
+// Update Application Status
+router.put(
+  "/status/:applicationId",
+  protect,
+  authorize("company"),
+  updateApplicationStatus
+);
 
 export default router;
