@@ -12,6 +12,8 @@ import companyRoutes from "./routes/company.routes.js";
 import dashboardRoutes from "./routes/dashboard.routes.js";
 import notificationRoutes from "./routes/notification.routes.js";
 import statisticsRoutes from "./routes/statistics.routes.js";
+import adminRoutes from "./routes/admin.routes.js";
+
 
 const app = express();
 
@@ -28,6 +30,7 @@ app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/notifications",notificationRoutes);
 app.use("/api/statistics", statisticsRoutes);
 app.use("/api/company", companyRoutes);
+app.use("/api/admin", adminRoutes);
 
 
 

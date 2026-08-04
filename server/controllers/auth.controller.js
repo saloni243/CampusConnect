@@ -64,12 +64,19 @@ export const register = async (req, res) => {
       }
     );
 
-    res.status(201).json({
-      success: true,
-      message: "Registration successful",
-      token,
-      user,
-    });
+    const userResponse = {
+  _id: user._id,
+  name: user.name,
+  email: user.email,
+  role: user.role,
+};
+
+res.status(201).json({
+  success: true,
+  message: "Registration successful",
+  token,
+  user: userResponse,
+});
   } catch (error) {
     console.log(error);
 
@@ -104,12 +111,19 @@ export const login = async (req, res) => {
 
     const token = generateToken(user);
 
-    res.status(200).json({
-      success: true,
-      message: "Login successful",
-      token,
-      user,
-    });
+const userResponse = {
+  _id: user._id,
+  name: user.name,
+  email: user.email,
+  role: user.role,
+};
+
+res.status(200).json({
+  success: true,
+  message: "Login successful",
+  token,
+  user: userResponse,
+});
   } catch (error) {
     res.status(500).json({
       success: false,

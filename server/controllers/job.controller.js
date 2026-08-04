@@ -31,6 +31,14 @@ export const createJob = async (req, res) => {
             });
         }
 
+        // Check if company is verified
+if (!company.isVerified) {
+    return res.status(403).json({
+        success: false,
+        message: "Your company is not verified yet. Please wait for admin approval."
+    });
+}
+
         // Create Job
         const job = await Job.create({
             company: company._id,

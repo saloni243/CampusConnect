@@ -1,5 +1,8 @@
 import Student from "../models/student.model.js";
+import Company from "../models/company.model.js";
+import Job from "../models/job.model.js";
 import Application from "../models/application.model.js";
+
 
 export const getPlacementStatistics = async (req, res) => {
     try {
@@ -72,6 +75,203 @@ export const getPlacementStatistics = async (req, res) => {
                 highestPackage,
                 averagePackage
             }
+        });
+
+    } catch (error) {
+
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+
+    }
+};
+
+// ================= COMPANY STATISTICS =================
+
+export const getCompanyStatistics = async (req, res) => {
+    try {
+
+        // Find logged-in company
+        const company = await Company.findOne({
+            user: req.user.id
+        });
+
+        if (!company) {
+            return res.status(404).json({
+                success: false,
+                message: "Company not found"
+            });
+        }
+
+        // Company Jobs
+        const jobs = await Job.find({
+            company: company._id
+        });
+
+        const jobIds = jobs.map(job => job._id);
+
+        // Statistics
+        const [
+            totalJobs,
+            activeJobs,
+            inactiveJobs,
+            totalApplications,
+            selectedCandidates
+        ] = await Promise.all([
+
+            Job.countDocuments({
+                company: company._id
+            }),
+
+            Job.countDocuments({
+                company: company._id,
+                isActive: true
+            }),
+
+            Job.countDocuments({
+                company: company._id,
+                isActive: false
+            }),
+
+            Application.countDocuments({
+                job: {
+                    $in: jobIds
+                }
+            }),
+
+            Application.countDocuments({
+                job: {
+                    $in: jobIds
+                },
+                status: "Selected"
+            })
+
+        ]);
+
+        res.status(200).json({
+            success: true,
+            statistics: {
+                totalJobs,
+                activeJobs,
+                inactiveJobs,
+                totalApplications,
+                selectedCandidates
+            }
+        });
+
+    } catch (error) {
+
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+
+    }
+};
+
+
+// ================= OVERALL STATISTICS =================
+
+export const getOverallStatistics = async (req, res) => {
+    try {
+
+        const [
+            totalStudents,
+            totalCompanies,
+            totalJobs,
+            activeJobs,
+            inactiveJobs,
+            totalApplications
+        ] = await Promise.all([
+
+            Student.countDocuments(),
+
+            Company.countDocuments(),
+
+            Job.countDocuments(),
+
+            Job.countDocuments({
+                isActive: true
+            }),
+
+            Job.countDocuments({
+                isActive: false
+            }),
+
+            Application.countDocuments()
+
+        ]);
+
+        res.status(200).json({
+            success: true,
+            statistics: {
+                totalStudents,
+                totalCompanies,
+                totalJobs,
+                activeJobs,
+                inactiveJobs,
+                totalApplications
+            }
+        });
+
+    } catch (error) {
+
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+
+    }
+};
+
+// ================= MONTHLY ANALYTICS =================
+
+export const getMonthlyAnalytics = async (req, res) => {
+    try {
+
+        const analytics = await Application.aggregate([
+            {
+                $group: {
+                    _id: {
+                        month: { $month: "$createdAt" }
+                    },
+                    applications: {
+                        $sum: 1
+                    }
+                }
+            },
+            {
+                $sort: {
+                    "_id.month": 1
+                }
+            }
+        ]);
+
+        const monthNames = [
+            "",
+            "Jan",
+            "Feb",
+            "Mar",
+            "Apr",
+            "May",
+            "Jun",
+            "Jul",
+            "Aug",
+            "Sep",
+            "Oct",
+            "Nov",
+            "Dec"
+        ];
+
+        const result = analytics.map(item => ({
+            month: monthNames[item._id.month],
+            applications: item.applications
+        }));
+
+        res.status(200).json({
+            success: true,
+            analytics: result
         });
 
     } catch (error) {
