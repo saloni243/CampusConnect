@@ -1,7 +1,10 @@
+import { isValidObjectId } from "../utils/validateObjectId.js";
 import Student from "../models/student.model.js";
 import Company from "../models/company.model.js";
 import Job from "../models/job.model.js";
 import Application from "../models/application.model.js";
+
+// ================= ADMIN DASHBOARD =================
 
 export const getAdminDashboard = async (req, res) => {
     try {
@@ -63,6 +66,7 @@ export const getAdminDashboard = async (req, res) => {
     }
 };
 
+
 // ================= GET ALL STUDENTS =================
 
 export const getAllStudents = async (req, res) => {
@@ -88,12 +92,22 @@ export const getAllStudents = async (req, res) => {
     }
 };
 
+
 // ================= GET STUDENT BY ID =================
 
 export const getStudentById = async (req, res) => {
     try {
 
-        const student = await Student.findById(req.params.id)
+        const { id } = req.params;
+
+        if (!isValidObjectId(id)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid student ID"
+            });
+        }
+
+        const student = await Student.findById(id)
             .populate("user", "name email");
 
         if (!student) {
@@ -117,6 +131,7 @@ export const getStudentById = async (req, res) => {
 
     }
 };
+
 
 // ================= SEARCH STUDENTS =================
 
@@ -167,6 +182,7 @@ export const searchStudents = async (req, res) => {
     }
 };
 
+
 // ================= GET ALL COMPANIES =================
 
 export const getAllCompanies = async (req, res) => {
@@ -192,12 +208,22 @@ export const getAllCompanies = async (req, res) => {
     }
 };
 
+
 // ================= GET COMPANY BY ID =================
 
 export const getCompanyById = async (req, res) => {
     try {
 
-        const company = await Company.findById(req.params.id)
+        const { id } = req.params;
+
+        if (!isValidObjectId(id)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid company ID"
+            });
+        }
+
+        const company = await Company.findById(id)
             .populate("user", "name email");
 
         if (!company) {
@@ -221,6 +247,7 @@ export const getCompanyById = async (req, res) => {
 
     }
 };
+
 
 // ================= SEARCH COMPANIES =================
 
@@ -271,12 +298,22 @@ export const searchCompanies = async (req, res) => {
     }
 };
 
+
 // ================= VERIFY COMPANY =================
 
 export const verifyCompany = async (req, res) => {
     try {
 
-        const company = await Company.findById(req.params.id);
+        const { id } = req.params;
+
+        if (!isValidObjectId(id)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid company ID"
+            });
+        }
+
+        const company = await Company.findById(id);
 
         if (!company) {
             return res.status(404).json({
@@ -305,6 +342,7 @@ export const verifyCompany = async (req, res) => {
     }
 };
 
+
 // ================= GET ALL JOBS =================
 
 export const getAllJobs = async (req, res) => {
@@ -330,12 +368,22 @@ export const getAllJobs = async (req, res) => {
     }
 };
 
+
 // ================= GET JOB BY ID =================
 
 export const getJobById = async (req, res) => {
     try {
 
-        const job = await Job.findById(req.params.id)
+        const { id } = req.params;
+
+        if (!isValidObjectId(id)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid job ID"
+            });
+        }
+
+        const job = await Job.findById(id)
             .populate("company", "companyName");
 
         if (!job) {
@@ -360,12 +408,22 @@ export const getJobById = async (req, res) => {
     }
 };
 
+
 // ================= TOGGLE JOB STATUS =================
 
 export const toggleJobStatus = async (req, res) => {
     try {
 
-        const job = await Job.findById(req.params.id);
+        const { id } = req.params;
+
+        if (!isValidObjectId(id)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid job ID"
+            });
+        }
+
+        const job = await Job.findById(id);
 
         if (!job) {
             return res.status(404).json({
@@ -396,12 +454,22 @@ export const toggleJobStatus = async (req, res) => {
     }
 };
 
+
 // ================= DELETE JOB =================
 
 export const deleteJob = async (req, res) => {
     try {
 
-        const job = await Job.findById(req.params.id);
+        const { id } = req.params;
+
+        if (!isValidObjectId(id)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid job ID"
+            });
+        }
+
+        const job = await Job.findById(id);
 
         if (!job) {
             return res.status(404).json({
@@ -415,6 +483,120 @@ export const deleteJob = async (req, res) => {
         res.status(200).json({
             success: true,
             message: "Job deleted successfully"
+        });
+
+    } catch (error) {
+
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+
+    }
+};
+
+
+// ================= GET / FILTER ALL APPLICATIONS =================
+
+export const getAllApplications = async (req, res) => {
+    try {
+
+        const { status, company, student } = req.query;
+
+        const filter = {};
+
+        if (status) {
+            filter.status = status;
+        }
+
+        if (company) {
+
+            if (!isValidObjectId(company)) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Invalid company ID"
+                });
+            }
+
+            filter.company = company;
+        }
+
+        if (student) {
+
+            if (!isValidObjectId(student)) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Invalid student ID"
+                });
+            }
+
+            filter.student = student;
+        }
+
+        const applications = await Application.find(filter)
+            .populate({
+                path: "student",
+                populate: {
+                    path: "user",
+                    select: "name email"
+                }
+            })
+            .populate("job", "title location package")
+            .populate("company", "companyName")
+            .sort({ createdAt: -1 });
+
+        res.status(200).json({
+            success: true,
+            count: applications.length,
+            applications
+        });
+
+    } catch (error) {
+
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+
+    }
+};
+
+
+// ================= GET APPLICATION BY ID =================
+
+export const getApplicationById = async (req, res) => {
+    try {
+
+        const { id } = req.params;
+
+        if (!isValidObjectId(id)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid application ID"
+            });
+        }
+
+        const application = await Application.findById(id)
+            .populate({
+                path: "student",
+                populate: {
+                    path: "user",
+                    select: "name email"
+                }
+            })
+            .populate("job", "title location package")
+            .populate("company", "companyName");
+
+        if (!application) {
+            return res.status(404).json({
+                success: false,
+                message: "Application not found"
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            application
         });
 
     } catch (error) {

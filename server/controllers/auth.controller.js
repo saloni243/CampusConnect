@@ -18,73 +18,109 @@ const generateToken = (user) => {
 };
 
 export const register = async (req, res) => {
-  try {
-    const { name, email, password, role } = req.body;
+    try {
+        const { name, email, password, role } = req.body;
 
-    const exists = await User.findOne({ email });
+        // Required fields
+        if (!name || !email || !password || !role) {
+            return res.status(400).json({
+                success: false,
+                message: "Name, email, password and role are required"
+            });
+        }
 
-    if (exists) {
-      return res.status(400).json({
-        success: false,
-        message: "User already exists",
-      });
+        // Validate name
+        if (name.trim().length < 2) {
+            return res.status(400).json({
+                success: false,
+                message: "Name must contain at least 2 characters"
+            });
+        }
+
+        // Validate email
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        if (!emailRegex.test(email)) {
+            return res.status(400).json({
+                success: false,
+                message: "Please provide a valid email address"
+            });
+        }
+
+        // Validate password
+        if (password.length < 6) {
+            return res.status(400).json({
+                success: false,
+                message: "Password must contain at least 6 characters"
+            });
+        }
+
+        // Only student and company can register publicly
+        if (!["student", "company"].includes(role)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid registration role"
+            });
+        }
+
+        // Check existing user
+        const exists = await User.findOne({
+            email: email.toLowerCase().trim()
+        });
+
+        if (exists) {
+            return res.status(400).json({
+                success: false,
+                message: "User already exists"
+            });
+        }
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        const user = await User.create({
+            name: name.trim(),
+            email: email.toLowerCase().trim(),
+            password: hashedPassword,
+            role
+        });
+
+        // Create Student profile
+        if (role === "student") {
+            await Student.create({
+                user: user._id
+            });
+        }
+
+        // Create Company profile
+        if (role === "company") {
+            await Company.create({
+                user: user._id,
+                companyName: name.trim()
+            });
+        }
+
+        const token = generateToken(user);
+
+        res.status(201).json({
+            success: true,
+            message: "Registration successful",
+            token,
+            user: {
+                _id: user._id,
+                name: user.name,
+                email: user.email,
+                role: user.role
+            }
+        });
+
+    } catch (error) {
+        console.log(error);
+
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
     }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const user = await User.create({
-      name,
-      email,
-      password: hashedPassword,
-      role,
-    });
-
-    // Automatically create student profile
-    if (role === "student") {
-      await Student.create({
-        user: user._id,
-      });
-    }
-
-    if (role === "company") {
-  await Company.create({
-    user: user._id,
-    companyName: name
-  });
-}
-
-    const token = jwt.sign(
-      {
-        id: user._id,
-        role: user.role,
-      },
-      process.env.JWT_SECRET,
-      {
-        expiresIn: "7d",
-      }
-    );
-
-    const userResponse = {
-  _id: user._id,
-  name: user.name,
-  email: user.email,
-  role: user.role,
-};
-
-res.status(201).json({
-  success: true,
-  message: "Registration successful",
-  token,
-  user: userResponse,
-});
-  } catch (error) {
-    console.log(error);
-
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
-  }
 };
 
 export const login = async (req, res) => {
