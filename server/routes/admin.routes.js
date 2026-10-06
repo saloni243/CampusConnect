@@ -1,8 +1,9 @@
 import express from "express";
 import { protect, authorize } from "../middleware/auth.middleware.js";
-import { getAdminDashboard , getAllStudents , getStudentById , searchStudents ,  getAllCompanies , getCompanyById , searchCompanies ,  verifyCompany , getAllJobs , getJobById , toggleJobStatus ,  deleteJob , getAllApplications ,  getApplicationById
+import { getAdminDashboard , getAllStudents , getStudentById , searchStudents ,  getAllCompanies , getCompanyById , searchCompanies ,  verifyCompany , rejectCompany , getAllJobs , getJobById , toggleJobStatus ,  deleteJob , getAllApplications ,  getApplicationById
  } from "../controllers/admin.controller.js";
  import { createAnnouncement ,  getAllAnnouncements , getAnnouncementById,  deleteAnnouncement} from "../controllers/announcement.controller.js";
+
  
 
 const router = express.Router();
@@ -71,6 +72,14 @@ router.put(
     protect,
     authorize("admin"),
     verifyCompany
+);
+
+// Reject Company
+router.put(
+    "/companies/:id/reject",
+    protect,
+    authorize("admin"),
+    rejectCompany
 );
 
 // ================= JOB MANAGEMENT =================

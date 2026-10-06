@@ -12,8 +12,11 @@ export const getAdminDashboard = async (req, res) => {
         const [
             totalStudents,
             totalCompanies,
+            pendingCompanies,
             totalJobs,
+            activeJobs,
             totalApplications,
+            selectedStudents,
             recentStudents,
             recentCompanies,
             recentJobs
@@ -23,9 +26,15 @@ export const getAdminDashboard = async (req, res) => {
 
             Company.countDocuments(),
 
+            Company.countDocuments({ isVerified: false }),
+
             Job.countDocuments(),
 
+            Job.countDocuments({ isActive: true }),
+
             Application.countDocuments(),
+
+            Application.countDocuments({ status: "Selected" }),
 
             Student.find()
                 .populate("user", "name email")
@@ -33,6 +42,7 @@ export const getAdminDashboard = async (req, res) => {
                 .limit(5),
 
             Company.find()
+                .populate("user", "name email")
                 .sort({ createdAt: -1 })
                 .limit(5),
 
@@ -48,8 +58,11 @@ export const getAdminDashboard = async (req, res) => {
             dashboard: {
                 totalStudents,
                 totalCompanies,
+                pendingCompanies,
                 totalJobs,
+                activeJobs,
                 totalApplications,
+                selectedStudents,
                 recentStudents,
                 recentCompanies,
                 recentJobs
@@ -65,6 +78,8 @@ export const getAdminDashboard = async (req, res) => {
 
     }
 };
+
+
 
 
 // ================= GET ALL STUDENTS =================
@@ -343,9 +358,54 @@ export const verifyCompany = async (req, res) => {
 };
 
 
+// ================= REJECT COMPANY =================
+
+export const rejectCompany = async (req, res) => {
+    try {
+
+        const { id } = req.params;
+
+        if (!isValidObjectId(id)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid company ID"
+            });
+        }
+
+        const company = await Company.findById(id);
+
+        if (!company) {
+            return res.status(404).json({
+                success: false,
+                message: "Company not found"
+            });
+        }
+
+        company.isVerified = false;
+
+        await company.save();
+
+        res.status(200).json({
+            success: true,
+            message: "Company verification rejected",
+            company
+        });
+
+    } catch (error) {
+
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+
+    }
+};
+
+
 // ================= GET ALL JOBS =================
 
 export const getAllJobs = async (req, res) => {
+
     try {
 
         const jobs = await Job.find()

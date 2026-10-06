@@ -1,0 +1,19 @@
+# Dependencies
+node_modules/
+
+# Environment files — NEVER commit real secrets
+.env
+.env.local
+.env.production
+
+# User uploads (use Cloudinary in production)
+uploads/*
+!uploads/.gitkeep
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
