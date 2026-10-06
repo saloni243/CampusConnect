@@ -1,9 +1,4 @@
-import pypandoc
-from pathlib import Path
 
-readme = r"""# CampusConnect – College Placement Management System
-
-> A full-stack college placement management platform connecting **Students, Companies/Recruiters, and TPO/Admins** in one centralized system.
 
 ## 📌 Overview
 
@@ -409,21 +404,5 @@ Built as a full-stack web application demonstrating:
 
 ---
 
-## 📄 License
 
-This project is intended for educational and portfolio purposes.
 
-If you plan to use or distribute this project commercially, add an appropriate license and update this section accordingly.
-"""
-
-out = Path("/mnt/data/README.md")
-# pypandoc is required for Markdown file generation in this environment.
-pypandoc.convert_text(
-    readme,
-    "md",
-    format="md",
-    outputfile=str(out),
-    extra_args=["--standalone"]
-)
-
-print(f"Created: {out}")
